@@ -58,12 +58,20 @@ import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.plugins.locationlayer.LocationLayerPlugin;
 import com.mapbox.mapboxsdk.plugins.locationlayer.modes.RenderMode;
+import com.mapbox.mapboxsdk.style.expressions.Expression;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonOptions;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
+
+import static com.mapbox.mapboxsdk.style.expressions.Expression.get;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textAllowOverlap;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textColor;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textField;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textIgnorePlacement;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.textSize;
 
 // classes to calculate a route
 import com.mapbox.mapboxsdk.style.sources.ImageSource;
@@ -100,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private static final String TAG = "DirectionsActivity";
     private NavigationMapRoute navigationMapRoute;
     // variables needed to initialize navigation
-    private Button button;
+    private Button button, btnMyLocation;
 
     private Button chooseCityButton;
     private EditText latEditText;
@@ -113,7 +121,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Handler handler;
     private Runnable runnable;
     private final String ID = "bike_location";
-    private final String URL_GET_DATA= "https://mapboxdemo-7716b.firebaseio.com/";
+    private final String URL_GET_DATA= "https://mapboxdemo-7716b.firebaseio.com/.json";
+    //private final String URL_GET_DATA= "https://svnckh2k19.firebaseio.com/.json";
 
 
     @Override
@@ -155,23 +164,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-//    private void getLocation(Style style){
-//        try {
-//            style.addSource(new GeoJsonSource(ID,new URL(URL_GET_DATA)));
-//        } catch (MalformedURLException e) {
-//            e.printStackTrace();
-//        }
-//        //all layer
-//        SymbolLayer layer = new SymbolLayer(ID,ID);
-//        layer.setProperties(iconImage("mapbox_marker_icon_default"));
-//        style.addLayer(layer);
-//        //refresh data
-//        handler = new Handler();
-//        runnable = new refreshData(map,handler);
-//        handler.postDelayed(handler,2000);
+
+
+//    private void bikeLocation(){
 //
+//        mapboxMap.getStyle(new Style.OnStyleLoaded() {
+//            @Override
+//            public void onStyleLoaded(@NonNull Style style) {
+//                try
+//                {
+//                    style.addSource(new GeoJsonSource(ID,new URI(URL_GET_DATA)));
+//                } catch (URISyntaxException e) {
+//                    e.printStackTrace();
+//                }
+//                Log.d(TAG,"lay du lieu tu firebase");
+//                //addDestinationIconSymbolLayer(style);
+////
+//
+//
+//            }
+//        });
 //    }
 
+    private void showMyCurrentLocation(){
+        LatLng point = new LatLng();
+        Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
+        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+                locationComponent.getLastKnownLocation().getLatitude());
+        mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
+            @Override
+            public void onStyleLoaded(@NonNull Style style) {
+
+                enableLocationComponent(style);
+                //addDestinationIconSymbolLayer(style);
+                addBikeIconSymbolLayer(style);
+
+            }
+        });
+        getRoute(originPoint,destinationPoint);
+
+    }
+//    private void addMarker(){
+//        mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
+//            @Override
+//            public void onStyleLoaded(@NonNull Style style) {
+//
+//
+//                addDestinationIconSymbolLayer(style);
+//
+//            }
+//        });
+//    }
     private void initTextViews() {
         latEditText = findViewById(R.id.geocode_latitude_editText);
         longEditText = findViewById(R.id.geocode_longitude_editText);
@@ -182,6 +225,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         final Button mapCenterButton = findViewById(R.id.map_center_button);
         Button startGeocodeButton = findViewById(R.id.start_geocode_button);
         chooseCityButton = findViewById(R.id.choose_city_spinner_button);
+        btnMyLocation = findViewById(R.id.btnMyLocation);
         startGeocodeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -227,6 +271,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 // Make a geocoding search with the target's coordinates
                 makeGeocodeSearch(target);
+
+
+            }
+        });
+        btnMyLocation.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showMyCurrentLocation();
 
 
             }
@@ -308,6 +360,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                             CarmenFeature feature = results.get(0);
                             geocodeResultTextView.setText(feature.toString());
                             animateCameraToNewPosition(latLng);
+                            //addMarker();
 
 
 
@@ -352,11 +405,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
-                //initTextViews();
-                //initButtons();
+                initTextViews();
+                initButtons();
                 enableLocationComponent(style);
-                addDestinationIconSymbolLayer(style);
-
+                //addDestinationIconSymbolLayer(style);
+                addBikeIconSymbolLayer(style);
 
                 mapboxMap.addOnMapClickListener(MainActivity.this);
                 button = findViewById(R.id.startButton);
@@ -376,23 +429,45 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         });
 
 
-
     }
 
 
-    private void addDestinationIconSymbolLayer(@NonNull Style loadedMapStyle) {
-        loadedMapStyle.addImage("destination-icon-id",
-                BitmapFactory.decodeResource(this.getResources(), R.drawable.mapbox_marker_icon_default));
-        GeoJsonSource geoJsonSource = new GeoJsonSource("destination-source-id");
-        loadedMapStyle.addSource(geoJsonSource);
-        SymbolLayer destinationSymbolLayer = new SymbolLayer("destination-symbol-layer-id", "destination-source-id");
-        destinationSymbolLayer.withProperties(
-                iconImage("destination-icon-id"),
+//    private void addDestinationIconSymbolLayer(@NonNull Style loadedMapStyle) {
+//        loadedMapStyle.addImage("destination-icon-id",
+//                BitmapFactory.decodeResource(this.getResources(), R.drawable.mapbox_marker_icon_default));
+//        GeoJsonSource geoJsonSource = new GeoJsonSource("destination-source-id");
+//        loadedMapStyle.addSource(geoJsonSource);
+//        SymbolLayer destinationSymbolLayer = new SymbolLayer("destination-symbol-layer-id", "destination-source-id");
+//        destinationSymbolLayer.withProperties(
+//                iconImage("destination-icon-id"),
+//                iconAllowOverlap(true),
+//                iconIgnorePlacement(true)
+//        );
+//        loadedMapStyle.addLayer(destinationSymbolLayer);
+
+    //}
+    private  void addBikeIconSymbolLayer(@NonNull Style bikeStyle){
+
+        bikeStyle.addImage("bike-icon-id",
+                BitmapFactory.decodeResource(this.getResources(),R.drawable.mapbox_marker_icon_default));
+        GeoJsonSource geoJsonSource = null;
+        try {
+            bikeStyle.addSource(new GeoJsonSource("bike-source-id",new URL(URL_GET_DATA)));
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        SymbolLayer countLayer = new SymbolLayer("bike-symbol-layer-id", "bike-source-id");
+
+        countLayer.withProperties(
+                iconImage("bike-icon-id"),
                 iconAllowOverlap(true),
                 iconIgnorePlacement(true)
         );
-        loadedMapStyle.addLayer(destinationSymbolLayer);
-
+        bikeStyle.addLayer(countLayer);
+        handler = new Handler();
+        runnable = new RefreshData(bikeStyle,handler);
+        handler.postDelayed(runnable,2000);
     }
 
     @SuppressWarnings( {"MissingPermission"})
@@ -403,13 +478,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
                 locationComponent.getLastKnownLocation().getLatitude());
 
-        GeoJsonSource source = mapboxMap.getStyle().getSourceAs("destination-source-id");
+        GeoJsonSource source = mapboxMap.getStyle().getSourceAs("bike-source-id");
         if (source != null) {
             source.setGeoJson(Feature.fromGeometry(destinationPoint));
         }
+
+//        GeoJsonSource source = mapboxMap.getStyle().getSourceAs("destination-source-id");
+//        if (source != null) {
+//            source.setGeoJson(Feature.fromGeometry(destinationPoint));
+//        }
         // click man hinh ra lat lng (hay vl)
         //LatLng destinationLatLng = new LatLng();
-       // setCoordinateEditTexts(point);
+         setCoordinateEditTexts(point);
 
         getRoute(originPoint, destinationPoint);
         button.setEnabled(true);
@@ -537,18 +617,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onLowMemory();
     }
 
-//    private class refreshData implements Runnable {
-//        private  MapboxMap map;
-//        private Handler handler;
-//        public refreshData(MapboxMap mapboxMap, Handler handler) {
-//            this.map = map;
-//            this.handler = handler;
-//        }
-//
-//        @Override
-//        public void run() {
-//
-//            ((GeoJsonSource)map.getSource())
-//        }
-//    }
+
+    private class RefreshData implements Runnable {
+        private  Style style;
+        private Handler handler;
+        public RefreshData(Style style, Handler handler) {
+            this.style = style;
+            this.handler = handler;
+        }
+
+        @Override
+        public void run() {
+
+            //((GeoJsonSource)style.getSource("bike-source-id")).setUrl(URL_GET_DATA);
+            handler.postDelayed(this, 2000);
+        }
+    }
 }

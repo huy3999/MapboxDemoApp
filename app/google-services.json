@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "132860535232-48e7aeanjjn5eu7uk8kvk0779o01i2ph.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.thanhhuy.mapboxdemoapp",
+            "certificate_hash": "819ce558dd69afe7f4b98ea849fb2ff9cd7e9c30"
+          }
+        },
+        {
           "client_id": "132860535232-9e7mlp22l0ldc5lvq5p7bqf3mlgfqpfe.apps.googleusercontent.com",
           "client_type": 3
         }
