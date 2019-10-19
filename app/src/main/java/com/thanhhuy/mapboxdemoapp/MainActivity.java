@@ -35,6 +35,7 @@ import com.mapbox.api.geocoding.v5.models.CarmenFeature;
 import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
 import com.mapbox.core.exceptions.ServicesException;
 import com.mapbox.geojson.Feature;
+import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
@@ -49,6 +50,7 @@ import com.mapbox.mapboxsdk.maps.OnMapReadyCallback;
 import com.mapbox.mapboxsdk.maps.Style;
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerView;
 import com.mapbox.mapboxsdk.plugins.markerview.MarkerViewManager;
+import com.mapbox.mapboxsdk.style.layers.PropertyFactory;
 import com.mapbox.mapboxsdk.style.layers.SymbolLayer;
 import com.mapbox.mapboxsdk.style.sources.GeoJsonSource;
 import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
@@ -71,6 +73,7 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconAllowOverlap;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconIgnorePlacement;
 import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconImage;
+import static com.mapbox.mapboxsdk.style.layers.PropertyFactory.iconOffset;
 
 // classes needed to initialize map
 // classes needed to add the location component
@@ -120,6 +123,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MarkerViewManager markerViewManager;
     View customView;
 
+    String timeStamp;
+    TextView txtTime;
+    Button btnGetRoute;
+
 
 
 
@@ -134,9 +141,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.getMapAsync(this);
 
         getData();
+
     }
     public void getData() {
-        reference = FirebaseDatabase.getInstance().getReference().child("xdata");
+        reference = FirebaseDatabase.getInstance().getReference().child("Devices").child("0020CD4E5A48911B");
         reference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -144,7 +152,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 if(dataSnapshot.exists()) {
 
                     String lati = dataSnapshot.child("lat").getValue().toString();
-                    String lngi = dataSnapshot.child("lng").getValue().toString();
+                    String lngi = dataSnapshot.child("lon").getValue().toString();
+                    timeStamp = dataSnapshot.child("timestamp").getValue().toString();
 
                     try {
                         lat = Double.parseDouble(lati);
@@ -173,55 +182,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
-    private void getRouteToBike(){
-
-        mapboxMap.setStyle(getString(R.string.navigation_guidance_day), new Style.OnStyleLoaded() {
-            @Override
-            public void onStyleLoaded(@NonNull Style style) {
-
-                enableLocationComponent(style);
-                //addDestinationIconSymbolLayer(style);
-                addBikeIconSymbolLayer(style);
-                setCoordinateEditTexts(pointCoor);
-
-                Point destinationPosition = Point.fromLngLat(pointCoor.getLongitude(),pointCoor.getLatitude());
-                Point originPosition = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
-                        locationComponent.getLastKnownLocation().getLatitude());
-
-                getRoute(originPosition,destinationPosition);
-            }
-        });
-    }
-
-
-
     private void showMyCurrentLocation(){
-
-
-        mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+         mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
 
                 getData();
                 enableLocationComponent(style);
+                symbolLayer();
                 //addDestinationIconSymbolLayer(style);
-                addBikeIconSymbolLayer(style);
+                //addBikeIconSymbolLayer(style);
                 setCoordinateEditTexts(pointCoor);
-                markerViewManager = new MarkerViewManager(mapView, mapboxMap);
-
-// Use an XML layout to create a View object
-                View customView = LayoutInflater.from(MainActivity.this).inflate(
-                        R.layout.marker_view_bubble, null);
-                customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-
-// Set the View's TextViews with content
-                TextView txtMarker = customView.findViewById(R.id.txtMarker);
-//                titleTextView.setText(R.string.draw_marker_options_title);
-                txtMarker.setText("My device");
-                if(pointCoor!=null) {
-                    markerView = new MarkerView(new LatLng(pointCoor), customView);
-                    markerViewManager.addMarker(markerView);
-                }
+                txtTime.setText(String.valueOf(timeStamp));
                 Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
                 Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
                         locationComponent.getLastKnownLocation().getLatitude());
@@ -232,9 +204,33 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 getRoute(originPoint,destinationPoint);
                 btnNavigation.setEnabled(true);
                 btnNavigation.setBackgroundResource(R.color.mapboxGreen);
+                markerViewManager = new MarkerViewManager(mapView, mapboxMap);
+//
+//// Use an XML layout to create a View object
+//
+                customView = LayoutInflater.from(MainActivity.this).inflate(
+                        R.layout.marker_view_bubble, null);
+                customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+
+                // Set the View's TextViews with content
+                TextView txtMarker = customView.findViewById(R.id.txtMarker);
+//                titleTextView.setText(R.string.draw_marker_options_title);
+                txtMarker.setText("My device");
+
+                if(pointCoor!=null) {
+                    markerView = new MarkerView(new LatLng(pointCoor), customView);
+                    markerViewManager.addMarker(markerView);
+                }
             }
         });
 
+
+    }
+    public void onClickConstraint(View customView){
+        constraintInfo.setVisibility(View.VISIBLE);
+        btnMyLocation.setVisibility(View.INVISIBLE);
+        btnNavigation.setVisibility(View.INVISIBLE);
+        //btnGetRoute.setEnabled(true);
 
     }
 
@@ -244,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        geocodeResultTextView = findViewById(R.id.geocode_result_message);
         constraintInfo = findViewById(R.id.constraintInfo);
         //constraintBubble = findViewById(R.id.constraintBubble);
+        txtTime = findViewById(R.id.txtTime);
 
     }
 
@@ -252,6 +249,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        Button startGeocodeButton = findViewById(R.id.start_geocode_button);
 //        chooseCityButton = findViewById(R.id.choose_city_spinner_button);
         btnMyLocation = findViewById(R.id.btnMyLocation);
+        btnGetRoute = findViewById(R.id.btnMyLocation);
         //constraintBubble = findViewById(R.id.constraintBubble);
 //        startGeocodeButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -306,12 +304,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             @Override
             public void onClick(View view) {
                 showMyCurrentLocation();
-                //getRouteToBike();
-
             }
         });
-
-
 
     }
 
@@ -326,6 +320,34 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private void setCoordinateEditTexts(LatLng latLng) {
         latEditText.setText(String.valueOf(latLng.getLatitude()));
         longEditText.setText(String.valueOf(latLng.getLongitude()));
+
+    }
+    private void getRouteButtonEvent(){
+        btnGetRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+                    @Override
+                    public void onStyleLoaded(@NonNull Style style) {
+
+                        getData();
+                        enableLocationComponent(style);
+
+                        Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
+                        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+                                locationComponent.getLastKnownLocation().getLatitude());
+
+
+                        Timber.e("Error get route " + lat);
+
+                        getRoute(originPoint,destinationPoint);
+                        btnNavigation.setEnabled(true);
+                        btnNavigation.setBackgroundResource(R.color.mapboxGreen);
+                    }
+                });
+            }
+        });
+
     }
 
 //    private void showCityListMenu() {
@@ -431,6 +453,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
+        //symbolLayer();
+
 //        List<Feature> symbolLayerIconFeatureList = new ArrayList<>();
 //        symbolLayerIconFeatureList.add(Feature.fromGeometry(
 //                Point.fromLngLat(pointCoor.getLongitude(),pointCoor.getLatitude())));
@@ -439,29 +463,27 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        symbolLayerIconFeatureList.add(Feature.fromGeometry(
 //                Point.fromLngLat(-56.990533, -30.583266)));
 //
-//        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/mapbox/cjf4m44iw0uza2spb3q0a7s41")
+//        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/huy3999/ck1g24eng30p01con8j8r5bdb")
 //
 //// Add the SymbolLayer icon image to the map style
-//                .withImage(ICON_ID, BitmapFactory.decodeResource(
-//                        MainActivity.this.getResources(), R.drawable.red_marker))
+//                .withImage("bike-icon-id", BitmapFactory.decodeResource(
+//                        MainActivity.this.getResources(), R.drawable.mapbox_marker_icon_default))
 //
 //// Adding a GeoJson source for the SymbolLayer icons.
-//                .withSource(new GeoJsonSource(SOURCE_ID,
+//                .withSource(new GeoJsonSource("bike-source-id",
 //                        FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
 //
 //// Adding the actual SymbolLayer to the map style. An offset is added that the bottom of the red
 //// marker icon gets fixed to the coordinate, rather than the middle of the icon being fixed to
 //// the coordinate point. This is offset is not always needed and is dependent on the image
 //// that you use for the SymbolLayer icon.
-//                .withLayer(new SymbolLayer(LAYER_ID, SOURCE_ID)
-//                        .withProperties(PropertyFactory.iconImage(ICON_ID),
+//                .withLayer(new SymbolLayer("bike-layer-id", "bike-source-id")
+//                        .withProperties(PropertyFactory.iconImage("bike-icon-id"),
 //                                iconAllowOverlap(true),
 //                                iconOffset(new Float[] {0f, -9f}))
 //                ), new Style.OnStyleLoaded() {
 //            @Override
 //            public void onStyleLoaded(@NonNull Style style) {
-//
-//// Map is set up and the style has loaded. Now you can add additional data or make other map adjustments.
 //
 //
 //            }
@@ -470,80 +492,135 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
-                initTextViews();
-                initButtons();
-                enableLocationComponent(style);
-                //addDestinationIconSymbolLayer(style);
-                addBikeIconSymbolLayer(style);
+//
 
-
-                mapboxMap.addOnMapClickListener(MainActivity.this);
-                btnNavigation = findViewById(R.id.startButton);
+// Map is set up and the style has loaded. Now you can add additional data or make other map adjustments.
+    getData();
+    enableLocationComponent(style);
+    initTextViews();
+    initButtons();
+    //getRouteButtonEvent();
+    //symbolLayer();
+    //addDestinationIconSymbolLayer(style);
+    //addBikeIconSymbolLayer(style);
+    mapboxMap.addOnMapClickListener(MainActivity.this);
+    btnNavigation = findViewById(R.id.startButton);
                 btnNavigation.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        boolean simulateRoute = true;
-                        NavigationLauncherOptions options = NavigationLauncherOptions.builder()
-                                .directionsRoute(currentRoute)
-                                .shouldSimulateRoute(simulateRoute)
-                                .build();
+        @Override
+        public void onClick(View v) {
+            boolean simulateRoute = true;
+            NavigationLauncherOptions options = NavigationLauncherOptions.builder()
+                    .directionsRoute(currentRoute)
+                    .shouldSimulateRoute(simulateRoute)
+                    .build();
 // Call this method with Context from within an Activity
-                        NavigationLauncher.startNavigation(MainActivity.this, options);
-                    }
-                });
+            NavigationLauncher.startNavigation(MainActivity.this, options);
+        }
+    });
                 constraintInfo.setVisibility(View.INVISIBLE);
-                // Initialize the MarkerViewManager
-                markerViewManager = new MarkerViewManager(mapView, mapboxMap);
+                //btnMyLocation.setEnabled(true);
+                //btnGetRoute.setEnabled(false);
 
-// Use an XML layout to create a View object
-
-                customView = LayoutInflater.from(MainActivity.this).inflate(
-                        R.layout.marker_view_bubble, null);
-                customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-
-// Set the View's TextViews with content
-                  TextView txtMarker = customView.findViewById(R.id.txtMarker);
-//                titleTextView.setText(R.string.draw_marker_options_title);
-                  txtMarker.setText("My device");
-
-                if(pointCoor!=null) {
-                    markerView = new MarkerView(new LatLng(pointCoor), customView);
-                    markerViewManager.addMarker(markerView);
-                }
+     //Initialize the MarkerViewManager
+//    markerViewManager = new MarkerViewManager(mapView, mapboxMap);
+//
+//// Use an XML layout to create a View object
+//
+//    customView = LayoutInflater.from(MainActivity.this).inflate(
+//            R.layout.marker_view_bubble, null);
+//                customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+//
+//    // Set the View's TextViews with content
+//    TextView txtMarker = customView.findViewById(R.id.txtMarker);
+////                titleTextView.setText(R.string.draw_marker_options_title);
+//                txtMarker.setText("My device");
+//
+//                if(pointCoor!=null) {
+//        markerView = new MarkerView(new LatLng(pointCoor), customView);
+//        markerViewManager.addMarker(markerView);
+//    }
+//    btnGetRoute.setOnClickListener(new View.OnClickListener() {
+//        @Override
+//        public void onClick(View view) {
+//            getRouteButtonEvent();
+//        }
+//    });
+//
             }
         });
     }
-    public void onClickConstraint(View customView){
-        constraintInfo.setVisibility(View.VISIBLE);
-        btnMyLocation.setVisibility(View.INVISIBLE);
-        btnNavigation.setVisibility(View.INVISIBLE);
+    public void symbolLayer(){
+        getData();
+        List<Feature> symbolLayerIconFeatureList = new ArrayList<>();
+        symbolLayerIconFeatureList.add(Feature.fromGeometry(
+                Point.fromLngLat(pointCoor.getLongitude(),pointCoor.getLatitude())));
+        symbolLayerIconFeatureList.add(Feature.fromGeometry(
+                Point.fromLngLat(-54.14164, -33.981818)));
+        symbolLayerIconFeatureList.add(Feature.fromGeometry(
+                Point.fromLngLat(-56.990533, -30.583266)));
+
+
+
+        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/huy3999/ck1g24eng30p01con8j8r5bdb")
+
+//
+// Add the SymbolLayer icon image to the map style
+                .withImage("bike-icon-id", BitmapFactory.decodeResource(
+                        MainActivity.this.getResources(), R.drawable.mapbox_marker_icon_default))
+
+// Adding a GeoJson source for the SymbolLayer icons.
+                .withSource(new GeoJsonSource("bike-source-id",
+                        FeatureCollection.fromFeatures(symbolLayerIconFeatureList)))
+
+// Adding the actual SymbolLayer to the map style. An offset is added that the bottom of the red
+// marker icon gets fixed to the coordinate, rather than the middle of the icon being fixed to
+// the coordinate point. This is offset is not always needed and is dependent on the image
+// that you use for the SymbolLayer icon.
+                .withLayer(new SymbolLayer("bike-layer-id", "bike-source-id")
+                        .withProperties(PropertyFactory.iconImage("bike-icon-id"),
+                                iconAllowOverlap(true),
+                                iconOffset(new Float[] {0f, -9f}))));
+//        customView = LayoutInflater.from(MainActivity.this).inflate(
+//                R.layout.marker_view_bubble, null);
+//        customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+//
+//        // Set the View's TextViews with content
+//        TextView txtMarker = customView.findViewById(R.id.txtMarker);
+////                titleTextView.setText(R.string.draw_marker_options_title);
+//        txtMarker.setText("My device");
+//
+//        if(pointCoor!=null) {
+//            markerView = new MarkerView(new LatLng(pointCoor), customView);
+//            markerViewManager.addMarker(markerView);
+//        }
     }
 
 
 
-    private  void addBikeIconSymbolLayer(@NonNull Style bikeStyle){
 
-        bikeStyle.addImage("bike-icon-id",
-                BitmapFactory.decodeResource(this.getResources(),R.drawable.mapbox_marker_icon_default));
-        GeoJsonSource geoJsonSource = null;
-        try {
-            bikeStyle.addSource(new GeoJsonSource("bike-source-id",new URL(URL_GET_DATA)));
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        SymbolLayer countLayer = new SymbolLayer("bike-symbol-layer-id", "bike-source-id");
-
-        countLayer.withProperties(
-                iconImage("bike-icon-id"),
-                iconAllowOverlap(true),
-                iconIgnorePlacement(true)
-        );
-        bikeStyle.addLayer(countLayer);
-        handler = new Handler();
-        runnable = new RefreshData(bikeStyle,handler);
-        handler.postDelayed(runnable,2000);
-    }
+//    private  void addBikeIconSymbolLayer(@NonNull Style bikeStyle){
+//
+//        bikeStyle.addImage("bike-icon-id",
+//                BitmapFactory.decodeResource(this.getResources(),R.drawable.mapbox_marker_icon_default));
+//        GeoJsonSource geoJsonSource = null;
+//        try {
+//            bikeStyle.addSource(new GeoJsonSource("bike-source-id",new URL(URL_GET_DATA)));
+//        } catch (MalformedURLException e) {
+//            e.printStackTrace();
+//        }
+//
+//        SymbolLayer countLayer = new SymbolLayer("bike-symbol-layer-id", "bike-source-id");
+//
+//        countLayer.withProperties(
+//                iconImage("bike-icon-id"),
+//                iconAllowOverlap(true),
+//                iconIgnorePlacement(true)
+//        );
+//        bikeStyle.addLayer(countLayer);
+//        handler = new Handler();
+//        runnable = new RefreshData(bikeStyle,handler);
+//        handler.postDelayed(runnable,2000);
+//    }
 
     @SuppressWarnings( {"MissingPermission"})
     @Override
@@ -563,9 +640,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         constraintInfo.setVisibility(View.INVISIBLE);
         btnMyLocation.setVisibility(View.VISIBLE);
         btnNavigation.setVisibility(View.VISIBLE);
-        //getRoute(originPoint, destinationPoint);
-        //btnNavigation.setEnabled(true);
-        //btnNavigation.setBackgroundResource(R.color.mapboxBlue);
+//        getRoute(originPoint, destinationPoint);
+//        btnNavigation.setEnabled(true);
+//        btnNavigation.setBackgroundResource(R.color.mapboxBlue);
         return true;
 
     }
