@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void showMyCurrentLocation(){
-         mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+        mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
 
@@ -194,16 +194,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 //addBikeIconSymbolLayer(style);
                 setCoordinateEditTexts(pointCoor);
                 txtTime.setText(String.valueOf(timeStamp));
-                Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
-                Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
-                        locationComponent.getLastKnownLocation().getLatitude());
-
-
-                Timber.e("Error get route " + lat);
-
-                getRoute(originPoint,destinationPoint);
-                btnNavigation.setEnabled(true);
-                btnNavigation.setBackgroundResource(R.color.mapboxGreen);
                 markerViewManager = new MarkerViewManager(mapView, mapboxMap);
 //
 //// Use an XML layout to create a View object
@@ -224,6 +214,49 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
+    }
+
+    private void getRouteButtonEvent(){
+    mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+        @Override
+        public void onStyleLoaded(@NonNull Style style) {
+
+            getData();
+            enableLocationComponent(style);
+            symbolLayer();
+            //addDestinationIconSymbolLayer(style);
+            //addBikeIconSymbolLayer(style);
+            setCoordinateEditTexts(pointCoor);
+            txtTime.setText(String.valueOf(timeStamp));
+            Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
+            Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+                    locationComponent.getLastKnownLocation().getLatitude());
+
+
+            Timber.e("Error get route " + lat);
+
+            getRoute(originPoint,destinationPoint);
+            btnNavigation.setEnabled(true);
+            btnNavigation.setBackgroundResource(R.color.mapboxGreen);
+            markerViewManager = new MarkerViewManager(mapView, mapboxMap);
+//
+//// Use an XML layout to create a View object
+//
+            customView = LayoutInflater.from(MainActivity.this).inflate(
+                    R.layout.marker_view_bubble, null);
+            customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+
+            // Set the View's TextViews with content
+            TextView txtMarker = customView.findViewById(R.id.txtMarker);
+//                titleTextView.setText(R.string.draw_marker_options_title);
+            txtMarker.setText("My device");
+
+            if(pointCoor!=null) {
+                markerView = new MarkerView(new LatLng(pointCoor), customView);
+                markerViewManager.addMarker(markerView);
+            }
+        }
+    });
 
     }
     public void onClickConstraint(View customView){
@@ -249,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        Button startGeocodeButton = findViewById(R.id.start_geocode_button);
 //        chooseCityButton = findViewById(R.id.choose_city_spinner_button);
         btnMyLocation = findViewById(R.id.btnMyLocation);
-        btnGetRoute = findViewById(R.id.btnMyLocation);
+        btnGetRoute = findViewById(R.id.btnGetRoute);
         //constraintBubble = findViewById(R.id.constraintBubble);
 //        startGeocodeButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -300,12 +333,21 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //            }
 //        });
+        btnGetRoute.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                getRouteButtonEvent();
+            }
+        });
         btnMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+
                 showMyCurrentLocation();
             }
         });
+
 
     }
 
@@ -322,33 +364,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         longEditText.setText(String.valueOf(latLng.getLongitude()));
 
     }
-    private void getRouteButtonEvent(){
-        btnGetRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
-                    @Override
-                    public void onStyleLoaded(@NonNull Style style) {
 
-                        getData();
-                        enableLocationComponent(style);
-
-                        Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
-                        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
-                                locationComponent.getLastKnownLocation().getLatitude());
-
-
-                        Timber.e("Error get route " + lat);
-
-                        getRoute(originPoint,destinationPoint);
-                        btnNavigation.setEnabled(true);
-                        btnNavigation.setBackgroundResource(R.color.mapboxGreen);
-                    }
-                });
-            }
-        });
-
-    }
 
 //    private void showCityListMenu() {
 //        List<String> modes = new ArrayList<>();
