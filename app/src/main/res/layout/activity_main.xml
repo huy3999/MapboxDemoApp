@@ -23,79 +23,101 @@
 
     </com.mapbox.mapboxsdk.maps.MapView>
 
-    <android.support.constraint.ConstraintLayout
-
-        android:id="@+id/constraintInfo"
-        android:layout_width="match_parent"
-        android:layout_height="211dp"
-        android:layout_marginTop="520dp"
-        android:background="@drawable/round_corner"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+    <com.github.ybq.android.spinkit.SpinKitView
+        android:id="@+id/loading"
+        style="@style/SpinKitView.FadingCircle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="70dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        mapbox:SpinKit_Color="@color/colorAccent" />
 
         <android.support.constraint.ConstraintLayout
-            android:id="@+id/constraintInfoSmall"
-            android:layout_width="300dp"
-            android:layout_height="120dp"
-            android:layout_marginTop="30dp"
-            android:layout_marginEnd="45dp"
-            android:layout_marginRight="45dp"
-            android:background="@drawable/round_corner_info_2"
+
+            android:id="@+id/constraintInfo"
+            android:elevation="2dp"
+            android:layout_width="350dp"
+            android:layout_height="150dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="550dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginRight="20dp"
+            android:background="@drawable/stroke_bottom"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <TextView
-                android:id="@+id/txtTemp"
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/constraintInfoSmall"
+                android:layout_width="300dp"
+                android:layout_height="80dp"
+                android:layout_marginTop="30dp"
+                android:background="@drawable/round_corner_info_2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/txtTemp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_marginLeft="30dp"
+                    android:text="nhiệt độ"
+                    android:textColor="@color/mapboxWhite"
+                    android:textSize="20sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/txtHumid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+
+                    android:layout_marginStart="120dp"
+                    android:layout_marginLeft="120dp"
+                    android:text="độ ẩm"
+                    android:textColor="@color/mapboxWhite"
+                    android:textSize="20sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </android.support.constraint.ConstraintLayout>
+
+            <Button
+
+                android:id="@+id/btnGetRoute"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
-                android:layout_marginLeft="30dp"
-                android:layout_marginBottom="45dp"
-                android:text="nhiệt độ"
+
+                android:text="Chỉ đường"
                 android:textColor="@color/mapboxWhite"
-                android:textSize="20sp"
+                android:visibility="visible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent" />
 
             <TextView
-                android:id="@+id/txtHumid"
+                android:id="@+id/txtDetail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-
-                android:layout_marginStart="120dp"
-                android:layout_marginLeft="120dp"
-                android:layout_marginBottom="45dp"
-                android:text="độ ẩm"
-                android:textColor="@color/mapboxWhite"
+                android:layout_marginEnd="2dp"
+                android:layout_marginRight="2dp"
+                android:layout_marginBottom="5dp"
+                android:text="Xem thêm"
+                android:textColor="@color/mapboxGray"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintEnd_toEndOf="parent" />
+
         </android.support.constraint.ConstraintLayout>
 
-        <Button
-
-            android:id="@+id/btnGetRoute"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:layout_marginStart="1dp"
-            android:layout_marginLeft="1dp"
-            android:text="Chỉ đường"
-            android:textColor="@color/mapboxWhite"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <TextView
-            android:id="@+id/txtDetail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Xem thêm"
-            android:textColor="@color/mapboxGray"
-            android:textSize="20sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </android.support.constraint.ConstraintLayout>
 
     <Button
         android:id="@+id/startButton"
@@ -119,6 +141,9 @@
         android:layout_marginLeft="316dp"
         android:layout_marginTop="428dp"
         android:background="@color/mapbox_blue"
+        android:shadowColor="@color/mapbox_navigation_view_color_primary_text"
+        android:shadowDx="10"
+        android:shadowDy="10"
         android:text="My Location"
         mapbox:layout_constraintStart_toStartOf="parent"
         mapbox:layout_constraintTop_toTopOf="parent" />

@@ -21,6 +21,8 @@
     <item name="navigationViewPrimary">@color/mapboxWhite</item>
     <item name="navigationViewSecondary">@color/mapboxBlue</item>
     <item name="navigationViewAccent">@color/mapboxPink</item>
+
     </style>
+    <style name="customInstructionView" parent="Theme.AppCompat.NoActionBar"> <item name="navigationViewRouteStyle">@style/NavigationMapRoute</item> <item name="navigationViewLocationLayerStyle">@style/NavigationLocationLayerStyle</item> <item name="navigationViewDestinationMarker">@drawable/map_marker_light</item> <item name="navigationViewRouteOverviewDrawable">@drawable/ic_route_preview</item> <item name="navigationViewMapStyle">@string/mapbox_style_dark</item> </style>
 
 </resources>

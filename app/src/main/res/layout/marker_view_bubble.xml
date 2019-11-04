@@ -7,7 +7,7 @@
         android:id="@+id/constraintBubble"
         android:layout_width="142dp"
         android:layout_height="56dp"
-        android:background="@drawable/round_corner"
+
 
         android:clickable="true"
         app:layout_constraintTop_toTopOf="parent"
@@ -15,15 +15,16 @@
 
     <TextView
 
-        android:textColor="@color/mapboxBlueDark"
+        android:textColor="@color/mapboxWhite"
         android:id="@+id/txtMarker"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="onClickConstraint"
+
         android:clickable="true"
         android:text="My device"
         android:textSize="24sp"
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="12dp" />
+
 
     </android.support.constraint.ConstraintLayout>

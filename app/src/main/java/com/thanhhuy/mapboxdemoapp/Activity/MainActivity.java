@@ -1,18 +1,15 @@
-package com.thanhhuy.mapboxdemoapp;
+package com.thanhhuy.mapboxdemoapp.Activity;
 
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ListPopupWindow;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -20,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
+import com.github.ybq.android.spinkit.SpinKitView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,11 +27,6 @@ import com.mapbox.android.core.permissions.PermissionsListener;
 import com.mapbox.android.core.permissions.PermissionsManager;
 import com.mapbox.api.directions.v5.models.DirectionsResponse;
 import com.mapbox.api.directions.v5.models.DirectionsRoute;
-import com.mapbox.api.geocoding.v5.GeocodingCriteria;
-import com.mapbox.api.geocoding.v5.MapboxGeocoding;
-import com.mapbox.api.geocoding.v5.models.CarmenFeature;
-import com.mapbox.api.geocoding.v5.models.GeocodingResponse;
-import com.mapbox.core.exceptions.ServicesException;
 import com.mapbox.geojson.Feature;
 import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
@@ -57,9 +50,8 @@ import com.mapbox.services.android.navigation.ui.v5.NavigationLauncher;
 import com.mapbox.services.android.navigation.ui.v5.NavigationLauncherOptions;
 import com.mapbox.services.android.navigation.ui.v5.route.NavigationMapRoute;
 import com.mapbox.services.android.navigation.v5.navigation.NavigationRoute;
+import com.thanhhuy.mapboxdemoapp.R;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -113,19 +105,32 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     //private final String URL_GET_DATA= "https://svnckh2k19.firebaseio.com/.json";
 
     DatabaseReference reference;
+    DatabaseReference reference2;
     public double lat = 0;
+    public double lat2 = 0;
     public double lng = 0;
+    public double lng2 = 0;
     public LatLng pointCoor;
+    public Point point;
+    public LatLng pointCoor2;
 
-    ConstraintLayout constraintInfo;
+    ConstraintLayout constraintInfo, constraintInfoSmall;
     ConstraintLayout constraintBubble;
-    private MarkerView markerView;
-    private MarkerViewManager markerViewManager;
-    View customView;
+    private MarkerView markerView,markerView2;
+    private MarkerViewManager markerViewManager,markerViewManager2;
+    View customView,customView2;
 
     String timeStamp;
-    TextView txtTime;
+    TextView txtDetail, txtTempSmall,txtHumidSmall;
     Button btnGetRoute;
+    String Humid;
+    String Humid2;
+    int humid,humid2;
+    String Temper,Temper2;
+    int temp,temp2;
+    SpinKitView loading;
+
+
 
 
 
@@ -140,7 +145,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
+        setTheme(R.style.customInstructionView);
         getData();
+
 
     }
     public void getData() {
@@ -154,21 +161,48 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     String lati = dataSnapshot.child("lat").getValue().toString();
                     String lngi = dataSnapshot.child("lon").getValue().toString();
                     timeStamp = dataSnapshot.child("timestamp").getValue().toString();
+                    Humid = dataSnapshot.child("Humi").getValue().toString();
+                    Temper = dataSnapshot.child("Temper").getValue().toString();
 
                     try {
                         lat = Double.parseDouble(lati);
                         lng = Double.parseDouble(lngi);
+                        humid = Integer.parseInt(Humid);
+                        temp = Integer.parseInt(Temper);
                     } catch (NumberFormatException ex) { // handle your exception
 
                     }
-
-
                     pointCoor = new LatLng(lat, lng);
-                    //getRouteToBike(point);
+                    Log.d("firebase", "get data successful");
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                   // getRouteToBike(point);
+                Log.d("firebase","unsuccessful");
+            }
+        });
+        reference2 = FirebaseDatabase.getInstance().getReference().child("Devices").child("00E32F0F468C9A24");
+        reference2.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
+                if(dataSnapshot.exists()) {
 
+                    String lati2 = dataSnapshot.child("lon").getValue().toString();
+                    String lngi2 = dataSnapshot.child("lat").getValue().toString();
+                    Humid2 = dataSnapshot.child("Humi").getValue().toString();
+                    Temper2 = dataSnapshot.child("Temper").getValue().toString();
+
+                    try {
+                         lat2 = Double.parseDouble(lati2);
+                         lng2 = Double.parseDouble(lngi2);
+                        humid2 = Integer.parseInt(Humid2);
+                        temp2 = Integer.parseInt(Temper2);
+                    } catch (NumberFormatException ex) { // handle your exception
+
+                    }
+                    pointCoor2 = new LatLng(lat2, lng2);
                     Log.d("firebase", "get data successful");
                 }
             }
@@ -179,45 +213,132 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             }
         });
 
-
     }
 
-    private void showMyCurrentLocation(){
-        mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+    private void updateMapInfo(){
+        loading.setVisibility(View.VISIBLE);
+        mapboxMap.setStyle(getString(R.string.navigation_guidance_streets), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
 
                 getData();
                 enableLocationComponent(style);
                 symbolLayer();
-                //addDestinationIconSymbolLayer(style);
-                //addBikeIconSymbolLayer(style);
-                setCoordinateEditTexts(pointCoor);
-                txtTime.setText(String.valueOf(timeStamp));
+                //setCoordinateEditTexts(pointCoor2);
+                //txtTime.setText(String.valueOf(timeStamp));
                 markerViewManager = new MarkerViewManager(mapView, mapboxMap);
-//
 //// Use an XML layout to create a View object
-//
                 customView = LayoutInflater.from(MainActivity.this).inflate(
                         R.layout.marker_view_bubble, null);
                 customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
 
                 // Set the View's TextViews with content
                 TextView txtMarker = customView.findViewById(R.id.txtMarker);
-//                titleTextView.setText(R.string.draw_marker_options_title);
-                txtMarker.setText("My device");
+                txtMarker.setText(temp+"°C");
+                if(temp>=30){
+                    //txtMarker.setBackgroundColor(getResources().getColor(R.color.mapboxRedLight));
+                    txtMarker.setBackgroundResource(R.drawable.round_corner_info_red);
 
-                if(pointCoor!=null) {
+                } else{
+                    //txtMarker.setBackgroundColor(getResources().getColor(R.color.mapboxGreen));
+
+                    txtMarker.setBackgroundResource(R.drawable.round_corner_info_2);
+                }
+                 if(pointCoor!=null) {
                     markerView = new MarkerView(new LatLng(pointCoor), customView);
                     markerViewManager.addMarker(markerView);
+                    txtMarker.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onClickConstraint(customView,temp,humid);
+                            txtDetail.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+                                    if(intent!=null){
+                                        intent.putExtra("temp",temp);
+                                        intent.putExtra("humid",humid);
+
+                                    }
+                                    startActivity(intent);
+
+
+                                }
+                            });
+                            btnGetRoute.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+
+                            getRouteButtonEvent(pointCoor);
+                                }
+                            });
+                        }
+                    });
+
                 }
+
+                markerViewManager2 = new MarkerViewManager(mapView, mapboxMap);
+//// Use an XML layout to create a View object
+                customView2 = LayoutInflater.from(MainActivity.this).inflate(
+                        R.layout.marker_view_bubble, null);
+                customView2.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+                final TextView txtMarker2 = customView2.findViewById(R.id.txtMarker);
+                txtMarker2.setText(temp2+"°C");
+                if(temp2>=30){
+                    txtMarker2.setBackgroundResource(R.drawable.round_corner_info_red);
+                    //txtMarker.getResources().getColor(R.color.mapboxRedFaint);
+                } else{
+                    txtMarker2.setBackgroundResource(R.drawable.round_corner_info_2);
+                    //txtMarker.getResources().getColor(R.color.mapboxGreenFaint);
+                }
+                if(pointCoor2!=null) {
+                    markerView2 = new MarkerView(new LatLng(pointCoor2),customView2);
+                    //markerViewManager.addMarker(markerView);
+                    markerViewManager2.addMarker(markerView2);
+                    txtMarker2.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            onClickConstraint(customView2,temp2,humid2);
+                            txtDetail.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+                                    if(intent!=null){
+                                        intent.putExtra("temp",temp2);
+                                        intent.putExtra("humid",humid2);
+
+                                    }
+                                    startActivity(intent);
+                                }
+                            });
+                            btnGetRoute.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    getRouteButtonEvent(pointCoor2);
+                                    Log.d("point= ",""+pointCoor2);
+                                }
+                            });
+                        }
+                    });
+
+                }
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        loading.setVisibility(View.INVISIBLE);
+                    }
+                },2000);
             }
         });
 
+
     }
 
-    private void getRouteButtonEvent(){
-    mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+    public void getRouteButtonEvent(@NonNull LatLng coor){
+        //point = Point.fromLngLat(coor.getLongitude(),coor.getLatitude());
+    mapboxMap.setStyle(getString(R.string.navigation_guidance_streets), new Style.OnStyleLoaded() {
         @Override
         public void onStyleLoaded(@NonNull Style style) {
 
@@ -227,42 +348,57 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             //addDestinationIconSymbolLayer(style);
             //addBikeIconSymbolLayer(style);
             setCoordinateEditTexts(pointCoor);
-            txtTime.setText(String.valueOf(timeStamp));
             Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
             Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
                     locationComponent.getLastKnownLocation().getLatitude());
 
 
             Timber.e("Error get route " + lat);
-
-            getRoute(originPoint,destinationPoint);
+            Log.d("point= ",""+point);
             btnNavigation.setEnabled(true);
+
+            //Sang fix
+            //if(destinationPoint != null)
+
+
+            //****************************
+            getRoute(originPoint,destinationPoint);
             btnNavigation.setBackgroundResource(R.color.mapboxGreen);
-            markerViewManager = new MarkerViewManager(mapView, mapboxMap);
-//
-//// Use an XML layout to create a View object
-//
-            customView = LayoutInflater.from(MainActivity.this).inflate(
-                    R.layout.marker_view_bubble, null);
-            customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+            //point = null;
+            Log.d("point= ",""+point);
 
-            // Set the View's TextViews with content
-            TextView txtMarker = customView.findViewById(R.id.txtMarker);
-//                titleTextView.setText(R.string.draw_marker_options_title);
-            txtMarker.setText("My device");
-
-            if(pointCoor!=null) {
-                markerView = new MarkerView(new LatLng(pointCoor), customView);
-                markerViewManager.addMarker(markerView);
-            }
+//            markerViewManager = new MarkerViewManager(mapView, mapboxMap);
+////
+////// Use an XML layout to create a View object
+////
+//            customView = LayoutInflater.from(MainActivity.this).inflate(
+//                    R.layout.marker_view_bubble, null);
+//            customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
+//
+//            // Set the View's TextViews with content
+//            TextView txtMarker = customView.findViewById(R.id.txtMarker);
+////                titleTextView.setText(R.string.draw_marker_options_title);
+//            txtMarker.setText("My device");
+//
+//            if(pointCoor!=null) {
+//                markerView = new MarkerView(new LatLng(pointCoor), customView);
+//                markerViewManager.addMarker(markerView);
+//            }
         }
     });
 
     }
-    public void onClickConstraint(View customView){
+    public void onClickConstraint(View customView, int t, int h){
         constraintInfo.setVisibility(View.VISIBLE);
         btnMyLocation.setVisibility(View.INVISIBLE);
         btnNavigation.setVisibility(View.INVISIBLE);
+        if(t>=30){
+            constraintInfoSmall.setBackgroundResource(R.drawable.round_corner_info_red);
+        }else{
+            constraintInfoSmall.setBackgroundResource(R.drawable.round_corner_info_2);
+        }
+        txtTempSmall.setText(t+"°C");
+        txtHumidSmall.setText(h+"%");
         //btnGetRoute.setEnabled(true);
 
     }
@@ -272,8 +408,28 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         longEditText = findViewById(R.id.geocode_longitude_editText);
 //        geocodeResultTextView = findViewById(R.id.geocode_result_message);
         constraintInfo = findViewById(R.id.constraintInfo);
+        constraintInfoSmall=findViewById(R.id.constraintInfoSmall);
         //constraintBubble = findViewById(R.id.constraintBubble);
-        txtTime = findViewById(R.id.txtTime);
+        txtTempSmall=findViewById(R.id.txtTemp);
+        txtHumidSmall=findViewById(R.id.txtHumid);
+        txtDetail = findViewById(R.id.txtDetail);
+        loading=findViewById(R.id.loading);
+//        txtDetail.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Intent intent = new Intent(MainActivity.this,DetailActivity.class);
+//                if(intent!=null){
+//                    intent.putExtra("temp",temp);
+//                    intent.putExtra("temp2",temp2);
+//                    intent.putExtra("humid",humid);
+//                    intent.putExtra("humid2",humid2);
+//                    intent.putExtra("pointCoor",pointCoor);
+//                    intent.putExtra("pointCoor2",pointCoor2);
+//                    }
+//                startActivity(intent);
+//
+//            }
+//        });
 
     }
 
@@ -333,22 +489,45 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //
 //            }
 //        });
-        btnGetRoute.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                getRouteButtonEvent();
-            }
-        });
         btnMyLocation.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                showMyCurrentLocation();
+                //showCurrentLocation();
+                updateMapInfo();
             }
         });
+//        btnGetRoute.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                getRouteButtonEvent(pointCoor);
+//            }
+//        });
 
 
+    }
+
+    private void showCurrentLocation() {
+        mapboxMap.setStyle(getString(R.string.navigation_guidance_streets), new Style.OnStyleLoaded() {
+            @Override
+            public void onStyleLoaded(@NonNull Style style) {
+
+                //getData();
+                enableLocationComponent(style);
+
+                setCoordinateEditTexts(pointCoor);
+
+                Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
+                Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+                        locationComponent.getLastKnownLocation().getLatitude());
+
+
+                Timber.e("Error get route " + lat);
+
+                //getRoute(originPoint,destinationPoint);
+            }
+        });
     }
 
     private boolean latCoordinateIsValid(double value) {
@@ -505,7 +684,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            }
 //        });
 
-        mapboxMap.setStyle(getString(R.string.navigation_guidance_custom), new Style.OnStyleLoaded() {
+        mapboxMap.setStyle(getString(R.string.navigation_guidance_streets), new Style.OnStyleLoaded() {
             @Override
             public void onStyleLoaded(@NonNull Style style) {
 //
@@ -515,10 +694,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     enableLocationComponent(style);
     initTextViews();
     initButtons();
-    //getRouteButtonEvent();
-    //symbolLayer();
-    //addDestinationIconSymbolLayer(style);
-    //addBikeIconSymbolLayer(style);
+    //new RefreshData(style,handler)
+    handler = new Handler();
+    runnable = new RefreshData(mapboxMap,handler);
+    handler.postDelayed(runnable,20000);
+
     mapboxMap.addOnMapClickListener(MainActivity.this);
     btnNavigation = findViewById(R.id.startButton);
                 btnNavigation.setOnClickListener(new View.OnClickListener() {
@@ -569,15 +749,15 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         getData();
         List<Feature> symbolLayerIconFeatureList = new ArrayList<>();
         symbolLayerIconFeatureList.add(Feature.fromGeometry(
+                Point.fromLngLat(pointCoor2.getLongitude(), pointCoor2.getLatitude())));
+        symbolLayerIconFeatureList.add(Feature.fromGeometry(
                 Point.fromLngLat(pointCoor.getLongitude(),pointCoor.getLatitude())));
-        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-                Point.fromLngLat(-54.14164, -33.981818)));
-        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-                Point.fromLngLat(-56.990533, -30.583266)));
 
 
 
-        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/huy3999/ck1g24eng30p01con8j8r5bdb")
+
+
+        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/huy3999/ck1qod41q3vaz1cm82rr3t3ez")
 
 //
 // Add the SymbolLayer icon image to the map style
@@ -596,19 +776,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .withProperties(PropertyFactory.iconImage("bike-icon-id"),
                                 iconAllowOverlap(true),
                                 iconOffset(new Float[] {0f, -9f}))));
-//        customView = LayoutInflater.from(MainActivity.this).inflate(
-//                R.layout.marker_view_bubble, null);
-//        customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-//
-//        // Set the View's TextViews with content
-//        TextView txtMarker = customView.findViewById(R.id.txtMarker);
-////                titleTextView.setText(R.string.draw_marker_options_title);
-//        txtMarker.setText("My device");
-//
-//        if(pointCoor!=null) {
-//            markerView = new MarkerView(new LatLng(pointCoor), customView);
-//            markerViewManager.addMarker(markerView);
-//        }
+
     }
 
 
@@ -642,21 +810,22 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onMapClick(@NonNull LatLng point) {
 
-//        Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
-//        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
-//                locationComponent.getLastKnownLocation().getLatitude());
-//
+        Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
+        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+                locationComponent.getLastKnownLocation().getLatitude());
+
 //        GeoJsonSource source = mapboxMap.getStyle().getSourceAs("bike-source-id");
 //        if (source != null) {
 //            source.setGeoJson(Feature.fromGeometry(destinationPoint));
 //        }
 
 
-        //setCoordinateEditTexts(point);
+        setCoordinateEditTexts(point);
         constraintInfo.setVisibility(View.INVISIBLE);
         btnMyLocation.setVisibility(View.VISIBLE);
         btnNavigation.setVisibility(View.VISIBLE);
-//        getRoute(originPoint, destinationPoint);
+        getRoute(originPoint, destinationPoint);
+        Log.d("AAA","" + destinationPoint);
 //        btnNavigation.setEnabled(true);
 //        btnNavigation.setBackgroundResource(R.color.mapboxBlue);
         return true;
@@ -786,18 +955,18 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     private class RefreshData implements Runnable {
-        private  Style style;
+        private  MapboxMap map;
         private Handler handler;
-        public RefreshData(Style style, Handler handler) {
-            this.style = style;
+        public RefreshData(MapboxMap map, Handler handler) {
+            this.map = map;
             this.handler = handler;
         }
 
         @Override
         public void run() {
-
+            //updateMapInfo();
             //((GeoJsonSource)style.getSource("bike-source-id")).setUrl(URL_GET_DATA);
-            handler.postDelayed(this, 2000);
+            handler.postDelayed(this, 20000);
         }
     }
 }

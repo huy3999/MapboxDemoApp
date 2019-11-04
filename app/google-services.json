@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "132860535232",
-    "firebase_url": "https://mapboxdemo-7716b.firebaseio.com",
-    "project_id": "mapboxdemo-7716b",
-    "storage_bucket": "mapboxdemo-7716b.appspot.com"
+    "project_number": "764454867158",
+    "firebase_url": "https://svnckh2k19.firebaseio.com",
+    "project_id": "svnckh2k19",
+    "storage_bucket": "svnckh2k19.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:132860535232:android:8292f7b5055f98b7bd6825",
+        "mobilesdk_app_id": "1:764454867158:android:95fc2252ee1f87a8ab3977",
         "android_client_info": {
           "package_name": "com.thanhhuy.mapboxdemoapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "132860535232-48e7aeanjjn5eu7uk8kvk0779o01i2ph.apps.googleusercontent.com",
+          "client_id": "764454867158-h0liar90joe8keej1eqi99h5do126r2r.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.thanhhuy.mapboxdemoapp",
@@ -23,20 +23,20 @@
           }
         },
         {
-          "client_id": "132860535232-9e7mlp22l0ldc5lvq5p7bqf3mlgfqpfe.apps.googleusercontent.com",
+          "client_id": "764454867158-292m7cq4ct8eosv3vrndgt0po39rup2n.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCUrIZNyQvJdnqJe9SQSCD5MhkbrYP0mEg"
+          "current_key": "AIzaSyCTJKQfYN2VmUuUEUaRGP7CzUzxfAJ9TN4"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "132860535232-9e7mlp22l0ldc5lvq5p7bqf3mlgfqpfe.apps.googleusercontent.com",
+              "client_id": "764454867158-292m7cq4ct8eosv3vrndgt0po39rup2n.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

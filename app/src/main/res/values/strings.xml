@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MapboxDemoApp</string>
+    <string name="app_name">SVNCKH</string>
     <string name="access_token">pk.eyJ1IjoiaHV5Mzk5OSIsImEiOiJjazB2MXo4cWEwbnd4M2NxcG8xb3d6NDMwIn0.NIJXCY6bmmUhJnyRP2Vz2w</string>
     <string name="user_location_permission_explanation">This app needs location permissions to show its functionality.</string>
     <string name="user_location_permission_not_granted">You didn\'t grant location permissions.</string>
@@ -20,7 +20,6 @@
     <!--Offline manager button text-->
     <string name="download_button_text">Download</string>
     <string name="list_button_text">List</string>
-
 
 
     <!--Location Component on Fragment below textview in test activity-->
@@ -445,4 +444,6 @@
     <string name="tap_on_map_save_to_shared_pref">Tap on the map to save coordinates to the device\'s Shared Preferences</string>
     <string name="shared_pref_marker_placement">Marker placed at coordinates saved in Shared Preferences.</string>
     <string name="navigation_guidance_custom">mapbox://styles/huy3999/ck1g24eng30p01con8j8r5bdb</string>
+    <string name="navigation_guidance_streets">mapbox://styles/huy3999/ck1qod41q3vaz1cm82rr3t3ez</string>
+
 </resources>
