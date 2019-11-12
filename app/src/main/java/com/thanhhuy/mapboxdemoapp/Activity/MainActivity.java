@@ -2,6 +2,7 @@ package com.thanhhuy.mapboxdemoapp.Activity;
 
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -32,6 +33,7 @@ import com.mapbox.geojson.FeatureCollection;
 import com.mapbox.geojson.Point;
 import com.mapbox.mapboxsdk.Mapbox;
 import com.mapbox.mapboxsdk.annotations.Marker;
+import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.geometry.LatLng;
@@ -120,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private MarkerViewManager markerViewManager,markerViewManager2;
     View customView,customView2;
 
-    String timeStamp;
+    public String loginName;
     TextView txtDetail, txtTempSmall,txtHumidSmall;
     Button btnGetRoute;
     String Humid;
@@ -140,78 +142,87 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         super.onCreate(savedInstanceState);
         Mapbox.getInstance(this, getString(R.string.access_token));
         setContentView(R.layout.activity_main);
-
+        Intent intent1 = getIntent();
+        loginName = intent1.getStringExtra("name");
+        Log.d("name", ""+loginName);
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
         setTheme(R.style.customInstructionView);
+
         getData();
 
 
     }
     public void getData() {
-        reference = FirebaseDatabase.getInstance().getReference().child("Devices").child("0020CD4E5A48911B");
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        Log.d("name", ""+loginName);
+        if(loginName.equals("user1") ||loginName.equals("User1")) {
+            reference = FirebaseDatabase.getInstance().getReference().child("Devices").child("0020CD4E5A48911B");
+            reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                if(dataSnapshot.exists()) {
+                    if (dataSnapshot.exists()) {
 
-                    String lati = dataSnapshot.child("lat").getValue().toString();
-                    String lngi = dataSnapshot.child("lon").getValue().toString();
-                    timeStamp = dataSnapshot.child("timestamp").getValue().toString();
-                    Humid = dataSnapshot.child("Humi").getValue().toString();
-                    Temper = dataSnapshot.child("Temper").getValue().toString();
+                        String lati = dataSnapshot.child("lat").getValue().toString();
+                        String lngi = dataSnapshot.child("lon").getValue().toString();
 
-                    try {
-                        lat = Double.parseDouble(lati);
-                        lng = Double.parseDouble(lngi);
-                        humid = Integer.parseInt(Humid);
-                        temp = Integer.parseInt(Temper);
-                    } catch (NumberFormatException ex) { // handle your exception
+                        Humid = dataSnapshot.child("Humi").getValue().toString();
+                        Temper = dataSnapshot.child("Temper").getValue().toString();
 
+                        try {
+                            lat = Double.parseDouble(lati);
+                            lng = Double.parseDouble(lngi);
+                            humid = Integer.parseInt(Humid);
+                            temp = Integer.parseInt(Temper);
+                        } catch (NumberFormatException ex) { // handle your exception
+
+                        }
+                        pointCoor = new LatLng(lat, lng);
+                        Log.d("firebase", "get data successful");
                     }
-                    pointCoor = new LatLng(lat, lng);
-                    Log.d("firebase", "get data successful");
                 }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                Log.d("firebase","unsuccessful");
-            }
-        });
-        reference2 = FirebaseDatabase.getInstance().getReference().child("Devices").child("00E32F0F468C9A24");
-        reference2.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                if(dataSnapshot.exists()) {
+                    Log.d("firebase", "unsuccessful");
+                }
+            });
+        }else if(loginName.equals("user2") ||loginName.equals("User2")) {
+            reference2 = FirebaseDatabase.getInstance().getReference().child("Devices").child("00E32F0F468C9A24");
+            reference2.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    String lati2 = dataSnapshot.child("lon").getValue().toString();
-                    String lngi2 = dataSnapshot.child("lat").getValue().toString();
-                    Humid2 = dataSnapshot.child("Humi").getValue().toString();
-                    Temper2 = dataSnapshot.child("Temper").getValue().toString();
+                    if (dataSnapshot.exists()) {
 
-                    try {
-                         lat2 = Double.parseDouble(lati2);
-                         lng2 = Double.parseDouble(lngi2);
-                        humid2 = Integer.parseInt(Humid2);
-                        temp2 = Integer.parseInt(Temper2);
-                    } catch (NumberFormatException ex) { // handle your exception
+                        String lati2 = dataSnapshot.child("lat").getValue().toString();
+                        String lngi2 = dataSnapshot.child("lon").getValue().toString();
+                        Humid2 = dataSnapshot.child("Humi").getValue().toString();
+                        Temper2 = dataSnapshot.child("Temper").getValue().toString();
 
+                        try {
+                            lat2 = Double.parseDouble(lati2);
+                            lng2 = Double.parseDouble(lngi2);
+                            humid2 = Integer.parseInt(Humid2);
+                            temp2 = Integer.parseInt(Temper2);
+                        } catch (NumberFormatException ex) { // handle your exception
+
+                        }
+                        pointCoor2 = new LatLng(lat2, lng2);
+                        Log.d("firebase", "get data successful");
                     }
-                    pointCoor2 = new LatLng(lat2, lng2);
-                    Log.d("firebase", "get data successful");
                 }
-            }
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                Log.d("firebase","unsuccessful");
-            }
-        });
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    Log.d("firebase", "unsuccessful");
+                }
+            });
+        }
 
     }
 
@@ -223,7 +234,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 getData();
                 enableLocationComponent(style);
-                symbolLayer();
+//                mapboxMap.addPolygon(generatePerimeter(
+//                        locationComponent,
+//                        100,
+//                        64));
+                //symbolLayer();
                 //setCoordinateEditTexts(pointCoor2);
                 //txtTime.setText(String.valueOf(timeStamp));
                 markerViewManager = new MarkerViewManager(mapView, mapboxMap);
@@ -322,7 +337,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                     });
 
                 }
-
+//                Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
+//                Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+//                        locationComponent.getLastKnownLocation().getLatitude());
+//                getRoute(originPoint,destinationPoint);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
                     @Override
@@ -335,20 +353,45 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
     }
+    private PolygonOptions generatePerimeter(LatLng centerCoordinates, double radiusInKilometers, int numberOfSides) {
+        List<LatLng> positions = new ArrayList<>();
+        double distanceX = radiusInKilometers / (111.319 * Math.cos(centerCoordinates.getLatitude() * Math.PI / 180));
+        double distanceY = radiusInKilometers / 110.574;
+
+        double slice = (2 * Math.PI) / numberOfSides;
+
+        double theta;
+        double x;
+        double y;
+        LatLng position;
+        for (int i = 0; i < numberOfSides; ++i) {
+            theta = i * slice;
+            x = distanceX * Math.cos(theta);
+            y = distanceY * Math.sin(theta);
+
+            position = new LatLng(centerCoordinates.getLatitude() + y,
+                    centerCoordinates.getLongitude() + x);
+            positions.add(position);
+        }
+        return new PolygonOptions()
+                .addAll(positions)
+                .fillColor(Color.BLUE)
+                .alpha(0.4f);
+    }
 
     public void getRouteButtonEvent(@NonNull LatLng coor){
-        //point = Point.fromLngLat(coor.getLongitude(),coor.getLatitude());
+        point = Point.fromLngLat(coor.getLongitude(),coor.getLatitude());
     mapboxMap.setStyle(getString(R.string.navigation_guidance_streets), new Style.OnStyleLoaded() {
         @Override
         public void onStyleLoaded(@NonNull Style style) {
 
             getData();
             enableLocationComponent(style);
-            symbolLayer();
+            //symbolLayer();
             //addDestinationIconSymbolLayer(style);
             //addBikeIconSymbolLayer(style);
-            setCoordinateEditTexts(pointCoor);
-            Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
+//            setCoordinateEditTexts(pointCoor);
+            //Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
             Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
                     locationComponent.getLastKnownLocation().getLatitude());
 
@@ -362,7 +405,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
 
             //****************************
-            getRoute(originPoint,destinationPoint);
+            getRoute(originPoint,point);
             btnNavigation.setBackgroundResource(R.color.mapboxGreen);
             //point = null;
             Log.d("point= ",""+point);
@@ -404,8 +447,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
     private void initTextViews() {
-        latEditText = findViewById(R.id.geocode_latitude_editText);
-        longEditText = findViewById(R.id.geocode_longitude_editText);
+        //latEditText = findViewById(R.id.geocode_latitude_editText);
+        //longEditText = findViewById(R.id.geocode_longitude_editText);
 //        geocodeResultTextView = findViewById(R.id.geocode_result_message);
         constraintInfo = findViewById(R.id.constraintInfo);
         constraintInfoSmall=findViewById(R.id.constraintInfoSmall);
@@ -648,15 +691,13 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public void onMapReady(@NonNull final MapboxMap mapboxMap) {
         this.mapboxMap = mapboxMap;
-        //symbolLayer();
+//        symbolLayer();
 
 //        List<Feature> symbolLayerIconFeatureList = new ArrayList<>();
 //        symbolLayerIconFeatureList.add(Feature.fromGeometry(
 //                Point.fromLngLat(pointCoor.getLongitude(),pointCoor.getLatitude())));
 //        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-//                Point.fromLngLat(-54.14164, -33.981818)));
-//        symbolLayerIconFeatureList.add(Feature.fromGeometry(
-//                Point.fromLngLat(-56.990533, -30.583266)));
+//                Point.fromLngLat(pointCoor2.getLongitude(),pointCoor2.getLatitude())));
 //
 //        mapboxMap.setStyle(new Style.Builder().fromUri("mapbox://styles/huy3999/ck1g24eng30p01con8j8r5bdb")
 //
@@ -714,33 +755,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         }
     });
                 constraintInfo.setVisibility(View.INVISIBLE);
-                //btnMyLocation.setEnabled(true);
-                //btnGetRoute.setEnabled(false);
 
-     //Initialize the MarkerViewManager
-//    markerViewManager = new MarkerViewManager(mapView, mapboxMap);
-//
-//// Use an XML layout to create a View object
-//
-//    customView = LayoutInflater.from(MainActivity.this).inflate(
-//            R.layout.marker_view_bubble, null);
-//                customView.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-//
-//    // Set the View's TextViews with content
-//    TextView txtMarker = customView.findViewById(R.id.txtMarker);
-////                titleTextView.setText(R.string.draw_marker_options_title);
-//                txtMarker.setText("My device");
-//
-//                if(pointCoor!=null) {
-//        markerView = new MarkerView(new LatLng(pointCoor), customView);
-//        markerViewManager.addMarker(markerView);
-//    }
-//    btnGetRoute.setOnClickListener(new View.OnClickListener() {
-//        @Override
-//        public void onClick(View view) {
-//            getRouteButtonEvent();
-//        }
-//    });
 //
             }
         });
@@ -810,9 +825,9 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     public boolean onMapClick(@NonNull LatLng point) {
 
-        Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
-        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
-                locationComponent.getLastKnownLocation().getLatitude());
+//        Point destinationPoint = Point.fromLngLat(point.getLongitude(), point.getLatitude());
+//        Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
+//                locationComponent.getLastKnownLocation().getLatitude());
 
 //        GeoJsonSource source = mapboxMap.getStyle().getSourceAs("bike-source-id");
 //        if (source != null) {
@@ -820,12 +835,12 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //        }
 
 
-        setCoordinateEditTexts(point);
+        //setCoordinateEditTexts(point);
         constraintInfo.setVisibility(View.INVISIBLE);
         btnMyLocation.setVisibility(View.VISIBLE);
         btnNavigation.setVisibility(View.VISIBLE);
-        getRoute(originPoint, destinationPoint);
-        Log.d("AAA","" + destinationPoint);
+        //getRoute(originPoint, destinationPoint);
+
 //        btnNavigation.setEnabled(true);
 //        btnNavigation.setBackgroundResource(R.color.mapboxBlue);
         return true;
@@ -964,7 +979,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         @Override
         public void run() {
-            //updateMapInfo();
+            updateMapInfo();
             //((GeoJsonSource)style.getSource("bike-source-id")).setUrl(URL_GET_DATA);
             handler.postDelayed(this, 20000);
         }

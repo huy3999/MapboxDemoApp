@@ -15,13 +15,42 @@
         mapbox:mapbox_cameraTargetLat="16.075042"
         mapbox:mapbox_cameraTargetLng="108.153679"
 
-        mapbox:mapbox_cameraZoom="15"
+        mapbox:mapbox_cameraZoom="10"
 
 
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="0dp">
 
     </com.mapbox.mapboxsdk.maps.MapView>
+
+    <Button
+        android:id="@+id/startButton"
+        android:layout_width="176dp"
+        android:layout_height="42dp"
+        android:layout_marginStart="116dp"
+        android:layout_marginLeft="116dp"
+        android:layout_marginTop="616dp"
+        android:background="@color/mapboxGrayLight"
+        android:enabled="false"
+        android:text="Start navigation"
+        android:textColor="@color/mapboxWhite"
+        mapbox:layout_constraintStart_toStartOf="@+id/mapView"
+        mapbox:layout_constraintTop_toTopOf="@+id/mapView" />
+
+    <Button
+        android:id="@+id/btnMyLocation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="400dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="20dp"
+        android:background="@color/mapbox_blue"
+        android:shadowColor="@color/mapbox_navigation_view_color_primary_text"
+        android:shadowDx="10"
+        android:shadowDy="10"
+        android:text="My Location"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.github.ybq.android.spinkit.SpinKitView
         android:id="@+id/loading"
@@ -37,174 +66,82 @@
         app:layout_constraintTop_toTopOf="parent"
         mapbox:SpinKit_Color="@color/colorAccent" />
 
-        <android.support.constraint.ConstraintLayout
+    <android.support.constraint.ConstraintLayout
 
-            android:id="@+id/constraintInfo"
-            android:elevation="2dp"
-            android:layout_width="350dp"
-            android:layout_height="150dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="550dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginRight="20dp"
-            android:background="@drawable/stroke_bottom"
+        android:id="@+id/constraintInfo"
+        android:layout_width="350dp"
+        android:layout_height="150dp"
+        android:layout_marginBottom="30dp"
+        android:background="@drawable/stroke_bottom"
+        android:elevation="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/mapView"
+        app:layout_constraintEnd_toEndOf="@+id/mapView"
+        app:layout_constraintStart_toStartOf="@+id/mapView">
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/constraintInfoSmall"
+            android:layout_width="300dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="30dp"
+            android:background="@drawable/round_corner_info_2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
-            <android.support.constraint.ConstraintLayout
-                android:id="@+id/constraintInfoSmall"
-                android:layout_width="300dp"
-                android:layout_height="80dp"
-                android:layout_marginTop="30dp"
-                android:background="@drawable/round_corner_info_2"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <TextView
-                    android:id="@+id/txtTemp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="30dp"
-                    android:layout_marginLeft="30dp"
-                    android:text="nhiệt độ"
-                    android:textColor="@color/mapboxWhite"
-                    android:textSize="20sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/txtHumid"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-
-                    android:layout_marginStart="120dp"
-                    android:layout_marginLeft="120dp"
-                    android:text="độ ẩm"
-                    android:textColor="@color/mapboxWhite"
-                    android:textSize="20sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </android.support.constraint.ConstraintLayout>
-
-            <Button
-
-                android:id="@+id/btnGetRoute"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:text="Chỉ đường"
-                android:textColor="@color/mapboxWhite"
-                android:visibility="visible"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent" />
-
             <TextView
-                android:id="@+id/txtDetail"
+                android:id="@+id/txtTemp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="2dp"
-                android:layout_marginRight="2dp"
-                android:layout_marginBottom="5dp"
-                android:text="Xem thêm"
-                android:textColor="@color/mapboxGray"
+                android:layout_marginStart="30dp"
+                android:layout_marginLeft="30dp"
+                android:text="nhiệt độ"
+                android:textColor="@color/mapboxWhite"
                 android:textSize="20sp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
+            <TextView
+                android:id="@+id/txtHumid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:layout_marginStart="120dp"
+                android:layout_marginLeft="120dp"
+                android:text="độ ẩm"
+                android:textColor="@color/mapboxWhite"
+                android:textSize="20sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
         </android.support.constraint.ConstraintLayout>
 
+        <Button
 
-    <Button
-        android:id="@+id/startButton"
-        android:layout_width="176dp"
-        android:layout_height="42dp"
-        android:layout_marginStart="116dp"
-        android:layout_marginLeft="116dp"
-        android:layout_marginTop="616dp"
-        android:background="@color/mapboxGrayLight"
-        android:enabled="false"
-        android:text="Start navigation"
-        android:textColor="@color/mapboxWhite"
-        mapbox:layout_constraintStart_toStartOf="parent"
-        mapbox:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/btnMyLocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="316dp"
-        android:layout_marginLeft="316dp"
-        android:layout_marginTop="428dp"
-        android:background="@color/mapbox_blue"
-        android:shadowColor="@color/mapbox_navigation_view_color_primary_text"
-        android:shadowDx="10"
-        android:shadowDy="10"
-        android:text="My Location"
-        mapbox:layout_constraintStart_toStartOf="parent"
-        mapbox:layout_constraintTop_toTopOf="parent" />
-
-    <android.support.design.widget.CoordinatorLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".Activity.MainActivity"
-        tools:layout_editor_absoluteX="240dp"
-        tools:layout_editor_absoluteY="0dp">
-
-
-        <android.support.v7.widget.CardView
-            android:layout_width="match_parent"
+            android:id="@+id/btnGetRoute"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginRight="8dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="#fff"
-                android:orientation="vertical">
+            android:text="Chỉ đường"
+            android:textColor="@color/mapboxWhite"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
-                <android.support.constraint.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:paddingBottom="8dp">
+        <TextView
+            android:id="@+id/txtDetail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="2dp"
+            android:layout_marginRight="2dp"
+            android:layout_marginBottom="5dp"
+            android:text="Xem thêm"
+            android:textColor="@color/mapboxGray"
+            android:textSize="20sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-                    <EditText
-                        android:id="@+id/geocode_latitude_editText"
-                        android:layout_width="100dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginLeft="8dp"
-                        android:layout_marginTop="8dp"
-                        android:hint="@string/latitude"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:textColor="@color/mapboxPinkDark"
-                        mapbox:layout_constraintStart_toStartOf="parent"
-                        mapbox:layout_constraintTop_toTopOf="parent" />
+    </android.support.constraint.ConstraintLayout>
 
-
-                    <EditText
-                        android:id="@+id/geocode_longitude_editText"
-                        android:layout_width="100dp"
-                        android:layout_height="45dp"
-                        android:hint="@string/longitude"
-                        android:inputType="numberDecimal|numberSigned"
-                        android:textColor="@color/mapboxPinkDark"
-                        mapbox:layout_constraintLeft_toRightOf="@id/geocode_latitude_editText"
-                        mapbox:layout_constraintTop_toTopOf="@+id/geocode_latitude_editText" />
-
-                </android.support.constraint.ConstraintLayout>
-
-            </LinearLayout>
-
-
-        </android.support.v7.widget.CardView>
-
-    </android.support.design.widget.CoordinatorLayout>
 
 </android.support.constraint.ConstraintLayout>
