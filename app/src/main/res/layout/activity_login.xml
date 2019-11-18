@@ -16,6 +16,7 @@
         android:textColor="@color/mapboxPink"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/shape_login"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
@@ -23,8 +24,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:text="Đăng nhập"
+        android:text="Theo dõi"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.455"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtName" />
 
@@ -35,7 +37,7 @@
         android:layout_marginEnd="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginBottom="23dp"
-        android:text="Nhập tên đăng nhập:"
+        android:text="Nhập mã thiết bị:"
         android:textColor="@color/mapboxBlue"
         android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/txtName"

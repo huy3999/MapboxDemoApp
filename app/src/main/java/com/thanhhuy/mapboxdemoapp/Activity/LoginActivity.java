@@ -16,7 +16,7 @@ public class LoginActivity extends AppCompatActivity {
     Button btnLogin;
     EditText txtName;
     TextView txtNhap;
-    String name;
+    String deviceCode;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,23 +28,23 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                name = txtName.getText().toString();
-                Log.d("login",""+name);
+                deviceCode = txtName.getText().toString();
+                Log.d("login",""+deviceCode);
                 //txtNhap.setText(name);
-                if(name.equals("user1") ||name.equals("user2")||name.equals("User1")||name.equals("User2")) {
-                    sendMessage(view);
-
-                }else{
-                    Toast.makeText(LoginActivity.this,"Không có user này, mời nhập lại",Toast.LENGTH_LONG).show();
-                    //name = "";
-                }
+//                if(name.equals("user1") ||name.equals("user2")||name.equals("User1")||name.equals("User2")) {
+                sendMessage(view);
+//
+//                }else{
+//                    Toast.makeText(LoginActivity.this,"Không có user này, mời nhập lại",Toast.LENGTH_LONG).show();
+//                    //name = "";
+//                }
             }
         });
     }
     public void sendMessage(View view) {
         Intent intent1 = new Intent(this, MainActivity.class);
 
-        intent1.putExtra("name", name);
+        intent1.putExtra("name", deviceCode);
         startActivity(intent1);
     }
 }

@@ -19,6 +19,7 @@ import android.widget.Toast;
 
 import com.firebase.geofire.GeoFire;
 import com.github.ybq.android.spinkit.SpinKitView;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -131,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     String Temper,Temper2;
     int temp,temp2;
     SpinKitView loading;
+    public String deviceCode;
 
 
 
@@ -143,7 +145,8 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         Mapbox.getInstance(this, getString(R.string.access_token));
         setContentView(R.layout.activity_main);
         Intent intent1 = getIntent();
-        loginName = intent1.getStringExtra("name");
+        //loginName = intent1.getStringExtra("name");
+        deviceCode = intent1.getStringExtra("Code");
         Log.d("name", ""+loginName);
         mapView = findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
@@ -156,75 +159,43 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
     public void getData() {
-        Log.d("name", ""+loginName);
-        if(loginName.equals("user1") ||loginName.equals("User1")) {
-            reference = FirebaseDatabase.getInstance().getReference().child("Devices").child("0020CD4E5A48911B");
-            reference.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        Log.d("code", "" + deviceCode);
+        reference = FirebaseDatabase.getInstance().getReference().child("Devices").child(deviceCode);
+        reference.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
-                    if (dataSnapshot.exists()) {
+                if (dataSnapshot.exists()) {
 
-                        String lati = dataSnapshot.child("lat").getValue().toString();
-                        String lngi = dataSnapshot.child("lon").getValue().toString();
+                    String lati = dataSnapshot.child("lat").getValue().toString();
+                    String lngi = dataSnapshot.child("lon").getValue().toString();
 
-                        Humid = dataSnapshot.child("Humi").getValue().toString();
-                        Temper = dataSnapshot.child("Temper").getValue().toString();
+                    Humid = dataSnapshot.child("Humi").getValue().toString();
+                    Temper = dataSnapshot.child("Temper").getValue().toString();
 
-                        try {
-                            lat = Double.parseDouble(lati);
-                            lng = Double.parseDouble(lngi);
-                            humid = Integer.parseInt(Humid);
-                            temp = Integer.parseInt(Temper);
-                        } catch (NumberFormatException ex) { // handle your exception
+                    try {
+                        lat = Double.parseDouble(lati);
+                        lng = Double.parseDouble(lngi);
+                        humid = Integer.parseInt(Humid);
+                        temp = Integer.parseInt(Temper);
+                    } catch (NumberFormatException ex) { // handle your exception
 
-                        }
-                        pointCoor = new LatLng(lat, lng);
-                        Log.d("firebase", "get data successful");
                     }
+                    pointCoor = new LatLng(lat, lng);
+                    Log.d("firebase", "get data successful");
                 }
+            }
 
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-                    Log.d("firebase", "unsuccessful");
-                }
-            });
-        }else if(loginName.equals("user2") ||loginName.equals("User2")) {
-            reference2 = FirebaseDatabase.getInstance().getReference().child("Devices").child("00E32F0F468C9A24");
-            reference2.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-                    if (dataSnapshot.exists()) {
-
-                        String lati2 = dataSnapshot.child("lat").getValue().toString();
-                        String lngi2 = dataSnapshot.child("lon").getValue().toString();
-                        Humid2 = dataSnapshot.child("Humi").getValue().toString();
-                        Temper2 = dataSnapshot.child("Temper").getValue().toString();
-
-                        try {
-                            lat2 = Double.parseDouble(lati2);
-                            lng2 = Double.parseDouble(lngi2);
-                            humid2 = Integer.parseInt(Humid2);
-                            temp2 = Integer.parseInt(Temper2);
-                        } catch (NumberFormatException ex) { // handle your exception
-
-                        }
-                        pointCoor2 = new LatLng(lat2, lng2);
-                        Log.d("firebase", "get data successful");
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError databaseError) {
-
-                    Log.d("firebase", "unsuccessful");
-                }
-            });
-        }
-
+                Log.d("firebase", "unsuccessful");
+            }
+        });
     }
+
+
+
 
     private void updateMapInfo(){
         loading.setVisibility(View.VISIBLE);
@@ -292,51 +263,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
                 }
 
-                markerViewManager2 = new MarkerViewManager(mapView, mapboxMap);
-//// Use an XML layout to create a View object
-                customView2 = LayoutInflater.from(MainActivity.this).inflate(
-                        R.layout.marker_view_bubble, null);
-                customView2.setLayoutParams(new FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT));
-                final TextView txtMarker2 = customView2.findViewById(R.id.txtMarker);
-                txtMarker2.setText(temp2+"°C");
-                if(temp2>=30){
-                    txtMarker2.setBackgroundResource(R.drawable.round_corner_info_red);
-                    //txtMarker.getResources().getColor(R.color.mapboxRedFaint);
-                } else{
-                    txtMarker2.setBackgroundResource(R.drawable.round_corner_info_2);
-                    //txtMarker.getResources().getColor(R.color.mapboxGreenFaint);
-                }
-                if(pointCoor2!=null) {
-                    markerView2 = new MarkerView(new LatLng(pointCoor2),customView2);
-                    //markerViewManager.addMarker(markerView);
-                    markerViewManager2.addMarker(markerView2);
-                    txtMarker2.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            onClickConstraint(customView2,temp2,humid2);
-                            txtDetail.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    Intent intent = new Intent(MainActivity.this,DetailActivity.class);
-                                    if(intent!=null){
-                                        intent.putExtra("temp",temp2);
-                                        intent.putExtra("humid",humid2);
 
-                                    }
-                                    startActivity(intent);
-                                }
-                            });
-                            btnGetRoute.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    getRouteButtonEvent(pointCoor2);
-                                    Log.d("point= ",""+pointCoor2);
-                                }
-                            });
-                        }
-                    });
-
-                }
 //                Point destinationPoint = Point.fromLngLat(pointCoor.getLongitude(), pointCoor.getLatitude());
 //                Point originPoint = Point.fromLngLat(locationComponent.getLastKnownLocation().getLongitude(),
 //                        locationComponent.getLastKnownLocation().getLatitude());
